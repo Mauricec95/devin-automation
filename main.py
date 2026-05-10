@@ -129,6 +129,71 @@ async def github_webhook(
     return {"status": "accepted", "session_id": session_id}
 
 
+@app.post("/trigger/{issue_number}")
+async def manual_trigger(issue_number: int):
+    """Manually trigger a Devin session for a GitHub issue from the dashboard."""
+    try:
+        issue = await github_client.get_issue(issue_number)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"GitHub API error: {exc}")
+
+    issue_title = issue["title"]
+    issue_url = issue["html_url"]
+    issue_body = issue.get("body") or ""
+    labels = issue.get("labels", [])
+    issue_type = github_client.extract_issue_type(labels)
+
+    logger.info(
+        json.dumps({
+            "event": "manual_trigger",
+            "issue": issue_number,
+            "title": issue_title,
+            "type": issue_type,
+        })
+    )
+
+    prompt = build_prompt(
+        issue_number=issue_number,
+        issue_title=issue_title,
+        issue_url=issue_url,
+        issue_body=issue_body,
+        issue_type=issue_type,
+    )
+
+    try:
+        session_data = await devin_client.create_session(prompt)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Devin API error: {exc}")
+
+    session_id = session_data["session_id"]
+    devin_url = session_data.get("url")
+
+    session_store.create_session(
+        session_id=session_id,
+        issue_number=issue_number,
+        issue_title=issue_title,
+        issue_type=issue_type,
+    )
+
+    started_comment = github_client.build_devin_started_comment(session_id, devin_url)
+    await github_client.post_comment(issue_number, started_comment)
+
+    asyncio.create_task(
+        poller.poll_until_done(session_id=session_id, issue_number=issue_number)
+    )
+
+    logger.info(
+        json.dumps({
+            "event": "session_dispatched",
+            "session_id": session_id,
+            "issue": issue_number,
+            "source": "manual",
+        })
+    )
+
+    return {"status": "accepted", "session_id": session_id}
+
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard():
     return render_dashboard()
