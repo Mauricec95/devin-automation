@@ -18,8 +18,11 @@ STATUS_EMOJI = {
     "running": "🔄",
     "success": "✅",
     "failed": "❌",
+    "blocked": "🟠",
     "pending": "⏳",
 }
+
+DEVIN_SESSION_BASE = "https://app.devin.ai/sessions"
 
 TYPE_BADGE = {
     "security": "#d73a4a",
@@ -126,15 +129,28 @@ def render_dashboard() -> str:
         is_running = s is not None and s["status"] == "running"
 
         if s:
-            emoji = STATUS_EMOJI.get(s["status"], "❓")
-            status_cell = f"{emoji} {s['status']}"
+            is_blocked = "blocked" in (s.get("error") or "")
+            emoji = STATUS_EMOJI.get("blocked" if is_blocked else s["status"], "❓")
+
+            if is_blocked:
+                session_url = f"{DEVIN_SESSION_BASE}/{s['session_id']}"
+                status_cell = (
+                    f'{emoji} <span style="color:#b45309;font-weight:600">Needs your input</span>'
+                    f'<div style="font-size:11px;color:#8b949e;margin-top:2px">'
+                    f'Devin is waiting — '
+                    f'<a href="{session_url}" target="_blank" style="color:#0969da">open Devin session</a>'
+                    f' to unblock it</div>'
+                )
+            else:
+                status_cell = f"{emoji} {s['status']}"
+
             pr_cell = (
                 f'<a href="{s["pr_url"]}" target="_blank">#{s["pr_number"]}</a>'
                 if s["pr_url"] else "—"
             )
             error_cell = (
                 f'<span title="{s["error"]}" style="color:#d73a4a">⚠ error</span>'
-                if s["error"] else ""
+                if s["error"] and not is_blocked else ""
             )
             duration_cell = _duration(s["duration_seconds"])
             started_cell = s["started_at"][:16].replace("T", " ")
