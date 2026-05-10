@@ -120,11 +120,15 @@ The dashboard at `/dashboard` answers the question **"Is this working?"** for an
 | # | Issue | Type | Status |
 |---|-------|------|--------|
 | [#1](https://github.com/Mauricec95/superset/issues/1) | Add startup validation to reject default SECRET_KEY | security | ✅ Merged ([PR #7](https://github.com/Mauricec95/superset/pull/7)) |
-| [#2](https://github.com/Mauricec95/superset/issues/2) | Upgrade @reduxjs/toolkit from 1.9.x to 2.x | dependency | ⏳ Pending |
-| [#3](https://github.com/Mauricec95/superset/issues/3) | Add missing Python type hints to date_parser.py | code-quality | ⏳ Pending |
+| [#2](https://github.com/Mauricec95/superset/issues/2) | Upgrade @reduxjs/toolkit from 1.9.x to 2.x | dependency | ⚠️ See note [^2] |
+| [#3](https://github.com/Mauricec95/superset/issues/3) | Add missing Python type hints to date_parser.py | code-quality | ⚠️ See note [^3] |
 | [#4](https://github.com/Mauricec95/superset/issues/4) | Replace `any` types in core TypeScript utility files | code-quality | ⏳ Pending |
 | [#5](https://github.com/Mauricec95/superset/issues/5) | Restrict CSP unsafe-eval to development mode only | security | ⏳ Pending |
 | [#6](https://github.com/Mauricec95/superset/issues/6) | Pin paramiko upper version bound | dependency | ⏳ Pending |
+
+[^2]: **Issue #2 — Session failure.** Devin's remote VM crashed mid-session with the error `"Remote tool validation failed: connection unavailable"`. The VM was rebooted from the Devin app and the poller automatically resumed polling (the auto-resume feature built into this system). However, the Devin API usage quota was exhausted before the session could complete. The automation infrastructure worked correctly — the failure was an infrastructure interruption on Devin's side, not a logic error in this system.
+
+[^3]: **Issue #3 — False success reported by Devin API.** The Devin session returned a `finished` status after only 31 seconds — far too short to have made any code changes. No pull request was opened and no files were modified. This behaviour occurs when the API usage quota is exhausted: Devin terminates the session immediately and reports it as finished rather than returning an explicit quota error. The automation correctly recorded the session outcome; the root cause is a quota limit on the Devin account used for this demo.
 
 ---
 
