@@ -110,6 +110,12 @@ The dashboard at `/dashboard` answers the question **"Is this working?"** for an
 - Per-session status, PR link, and duration
 - JSON API link for programmatic access
 
+**Recent additions:**
+
+- **▶ Run Devin button** — every issue row has a one-click button to trigger a Devin session directly from the dashboard, without touching GitHub labels
+- **Blocked session handling** — when Devin's VM crashes or it needs human input, the dashboard shows `🟠 Needs your input` with a direct link to the Devin session instead of a generic failure message
+- **Auto-resume on startup** — when the server restarts, it automatically finds any previously blocked sessions and resumes polling them so nothing gets lost between restarts
+
 ---
 
 ## Issues Remediated
