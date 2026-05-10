@@ -117,6 +117,8 @@ The dashboard at `/dashboard` answers the question **"Is this working?"** for an
 
 ## Issues Remediated
 
+Issues #1–#3 were triggered and attempted by Devin. Issues #4–#6 remain pending.
+
 | # | Issue | Type | Status |
 |---|-------|------|--------|
 | [#1](https://github.com/Mauricec95/superset/issues/1) | Add startup validation to reject default SECRET_KEY | security | ✅ Merged ([PR #7](https://github.com/Mauricec95/superset/pull/7)) |
