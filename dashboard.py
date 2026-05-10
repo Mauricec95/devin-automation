@@ -80,14 +80,31 @@ def _type_breakdown_cards(sessions: list[dict]) -> str:
     return cards
 
 
-def _trigger_button(issue_number: int, is_running: bool) -> str:
-    if is_running:
+def _trigger_button(issue_number: int, session: dict | None) -> str:
+    if session is None:
+        label, bg = "▶ Run Devin", "#0969da"
+        return (
+            f'<button onclick="triggerDevin({issue_number})" '
+            f'style="background:{bg};color:#fff;border:none;border-radius:6px;'
+            f'padding:4px 12px;font-size:12px;cursor:pointer;white-space:nowrap">'
+            f'{label}</button>'
+        )
+
+    status = session.get("status")
+    is_blocked = "blocked" in (session.get("error") or "")
+
+    if status == "running" or is_blocked:
         return '<span style="color:#8b949e;font-size:12px">⏳ running…</span>'
+
+    if status == "success":
+        return '<span style="color:#1a7f37;font-size:12px">✅ Done</span>'
+
+    # failed (non-blocked) — allow re-run
     return (
         f'<button onclick="triggerDevin({issue_number})" '
-        f'style="background:#0969da;color:#fff;border:none;border-radius:6px;'
+        f'style="background:#6f42c1;color:#fff;border:none;border-radius:6px;'
         f'padding:4px 12px;font-size:12px;cursor:pointer;white-space:nowrap">'
-        f'▶ Run Devin</button>'
+        f'↺ Re-run Devin</button>'
     )
 
 
@@ -127,6 +144,7 @@ def render_dashboard() -> str:
         s = session_by_issue.get(issue_number)
         type_color = TYPE_BADGE.get(issue_type, "#888")
         is_running = s is not None and s["status"] == "running"
+        is_blocked = s is not None and "blocked" in (s.get("error") or "")
 
         if s:
             is_blocked = "blocked" in (s.get("error") or "")
@@ -172,7 +190,7 @@ def render_dashboard() -> str:
           <td>{pr_cell} {error_cell}</td>
           <td>{duration_cell}</td>
           <td style="font-size:11px;color:#888">{started_cell}</td>
-          <td>{_trigger_button(issue_number, is_running)}</td>
+          <td>{_trigger_button(issue_number, s)}</td>
         </tr>"""
 
     return f"""<!DOCTYPE html>
