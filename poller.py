@@ -45,6 +45,27 @@ async def poll_until_done(
                 })
             )
 
+            # If Devin resumed after being blocked, flip our DB record back to running
+            current = session_store.get_session(session_id)
+            if (
+                current
+                and current.get("status") == "failed"
+                and "blocked" in (current.get("error") or "")
+                and not devin_client.is_terminal(status_raw)
+            ):
+                session_store.update_session_status(
+                    session_id=session_id,
+                    status="running",
+                    error=None,
+                )
+                logger.info(
+                    json.dumps({
+                        "event": "session_unblocked",
+                        "session_id": session_id,
+                        "issue": issue_number,
+                    })
+                )
+
             if not devin_client.is_terminal(status_raw):
                 continue
 

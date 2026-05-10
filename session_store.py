@@ -94,6 +94,15 @@ def update_session_status(
     )
 
 
+def get_blocked_sessions() -> list[dict]:
+    """Return sessions that were blocked and may have since resumed."""
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT * FROM sessions WHERE status = 'failed' AND error LIKE '%blocked%'"
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def get_all_sessions() -> list[dict]:
     with get_conn() as conn:
         rows = conn.execute(

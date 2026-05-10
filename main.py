@@ -28,7 +28,25 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     os.makedirs(os.path.dirname(session_store.DATABASE_PATH), exist_ok=True)
     session_store.init_db()
-    logger.info(json.dumps({"event": "server_started"}))
+
+    # Resume polling for any sessions that were blocked when the server last stopped
+    blocked = session_store.get_blocked_sessions()
+    for s in blocked:
+        logger.info(
+            json.dumps({
+                "event": "resuming_blocked_session",
+                "session_id": s["session_id"],
+                "issue": s["issue_number"],
+            })
+        )
+        asyncio.ensure_future(
+            poller.poll_until_done(
+                session_id=s["session_id"],
+                issue_number=s["issue_number"],
+            )
+        )
+
+    logger.info(json.dumps({"event": "server_started", "resumed_blocked": len(blocked)}))
     yield
     logger.info(json.dumps({"event": "server_stopped"}))
 
