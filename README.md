@@ -109,6 +109,9 @@ The dashboard at `/dashboard` answers the question **"Is this working?"** for an
 - Breakdown by issue type (security · dependency · code-quality)
 - Per-session status, PR link, and duration
 - JSON API link for programmatic access
+- **▶ Run Devin button** per issue — one click to trigger, no GitHub label needed. Hidden on success, disabled while running, purple re-run on failure
+- **Blocked session handling** — shows `🟠 Needs your input` with a direct link to the Devin session instead of a generic error
+- **Auto-resume** — on server restart, blocked sessions are automatically re-polled
 
 ---
 
