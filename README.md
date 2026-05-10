@@ -150,3 +150,23 @@ devin-automation/
 Traditional automation (Dependabot, shell scripts) handles narrow, pre-defined patterns — bump a version, apply a patch. Devin handles the **long tail**: security hardening, type safety fixes, config changes — anything that requires reading and understanding code.
 
 The same system handles all three issue types with a single interface: a prompt. The human retains full control — every fix goes through a Pull Request review before anything is merged.
+
+### The Real Problem This Solves
+
+Every engineering team has a backlog of issues that never get prioritized — not because they don't matter, but because they're not glamorous enough to justify pulling an engineer off feature work. Security hardening tickets. Outdated dependencies. Type safety debt. They sit there for months.
+
+Apache Superset is a perfect example. Our audit identified a default `SECRET_KEY` that makes session tokens forgeable, a CSP policy that allows `unsafe-eval` in production, an EOL dependency with no security patches, and dozens of missing type annotations. None of these are hard to fix. All of them would take a real engineer 30–60 minutes each. None of them ever make it to the top of the sprint.
+
+### Why Existing Tools Don't Solve It
+
+Dependabot can bump a version number. A shell script can run a linter. But fixing a security configuration, adding type annotations to a specific file, or restricting a CSP policy to development mode — these require *understanding the codebase*. You need to know which file to change, what the correct logic is, and whether the tests still pass. That's not a script, that's engineering judgment.
+
+### Why Devin Changes the Equation
+
+Devin is the first tool that can receive a natural-language description of an engineering problem, read the relevant code, reason about the correct fix, run the tests, and open a Pull Request — without a human writing a single line. That's not a copilot you pair program with. That's a delegation model: you describe the problem, Devin solves it, you review the result.
+
+In this system, triggering a fix costs an engineer **30 seconds** — the time it takes to add a label to a GitHub issue. The rest is autonomous. Devin clones the repo, understands the context, makes the change, validates it, and ships the PR. The engineer reviews and merges.
+
+### The Compounding Advantage
+
+Build this workflow once, and every future issue labeled `devin-fix` gets picked up automatically. The backlog shrinks on its own. Security findings from a scan become PRs without a meeting. Dependency alerts become fixes without a sprint ticket. The system gets more valuable the more issues you feed it — and it runs while your engineers are focused on things that actually require human creativity.
